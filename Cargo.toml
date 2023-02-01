@@ -1,8 +1,11 @@
 [package]
 name = "char-iter"
 version = "0.1.0"
+authors = ["David Cuthbert <dacut@kanga.org>"]
+description = "Lazily iterate over Unicode characters from a u8 slice in Rust."
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+homepage = "https://github.com/dacut/char-iter"
+license = "Apache-2.0"
+repository = "https://github.com/dacut/char-iter"
 
 [dependencies]
