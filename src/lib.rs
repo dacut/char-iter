@@ -5,7 +5,7 @@
 //! method on those types:
 //!
 //! ```
-//! use char_iter::CharIterExt;
+//! use lazy_char_iter::LazyCharIterExt;
 //!
 //! let bread_str: &str = "brød";
 //! let bread_bytes: &[u8] = bread_str.as_bytes();
@@ -21,7 +21,7 @@ use std::{
 };
 
 /// Iterate over the characters in a given type.
-pub trait CharIterExt {
+pub trait LazyCharIterExt {
     type Iter;
 
     /// Returns an iterator over the `char`s of the given type.
@@ -38,7 +38,7 @@ pub trait CharIterExt {
     /// Basic usage:
     ///
     /// ```
-    /// use char_iter::CharIterExt;
+    /// use lazy_char_iter::LazyCharIterExt;
     ///
     /// let bread_str: &str = "brød";
     /// let bread_bytes: &[u8] = bread_str.as_bytes();
@@ -55,7 +55,7 @@ pub trait CharIterExt {
     /// Invalid UTF-8 results in an error when the invalid character is hit:
     ///
     /// ```
-    /// use char_iter::{CharIterExt, Utf8Error};
+    /// use lazy_char_iter::{LazyCharIterExt, Utf8Error};
     ///
     /// let invalid = vec![b'b', b'r', b'\xc3', b'\xc3', b'd'];
     /// let invalid_bytes: &[u8] = invalid.as_slice();
@@ -70,11 +70,11 @@ pub trait CharIterExt {
 
 /// The resulting iterator returned when `.chars()` is called on a `&[u8]`.
 #[derive(Clone, Debug)]
-pub struct CharSliceIter<'a> {
+pub struct LazyCharSliceIter<'a> {
     slice_iter: ::std::slice::Iter<'a, u8>,
 }
 
-impl<'a> CharSliceIter<'a> {
+impl<'a> LazyCharSliceIter<'a> {
     /// Returns the undecoded remainder of the slice.
     ///
     /// This has the same lifetime as the original slice, so the iterator can continue to be used while this exists.
@@ -84,7 +84,7 @@ impl<'a> CharSliceIter<'a> {
     /// Basic usage:
     ///
     /// ```
-    /// use char_iter::CharIterExt;
+    /// use lazy_char_iter::LazyCharIterExt;
     ///
     /// let bread_str: &str = "brød";
     /// let bread_bytes: &[u8] = bread_str.as_bytes();
@@ -108,14 +108,14 @@ impl<'a> CharSliceIter<'a> {
     }
 }
 
-impl<'a> AsRef<[u8]> for CharSliceIter<'a> {
+impl<'a> AsRef<[u8]> for LazyCharSliceIter<'a> {
     #[inline]
     fn as_ref(&self) -> &'a [u8] {
         self.slice_iter.as_slice()
     }
 }
 
-impl<'a> Iterator for CharSliceIter<'a> {
+impl<'a> Iterator for LazyCharSliceIter<'a> {
     type Item = Result<char, Utf8Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -230,7 +230,7 @@ impl<'a> Iterator for CharSliceIter<'a> {
     }
 }
 
-impl<'a> DoubleEndedIterator for CharSliceIter<'a> {
+impl<'a> DoubleEndedIterator for LazyCharSliceIter<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let b1 = *(self.slice_iter.next_back()?);
 
@@ -302,23 +302,23 @@ impl<'a> DoubleEndedIterator for CharSliceIter<'a> {
     }
 }
 
-impl<'a> FusedIterator for CharSliceIter<'a> {}
+impl<'a> FusedIterator for LazyCharSliceIter<'a> {}
 
-impl<'a> CharIterExt for &'a [u8] {
-    type Iter = CharSliceIter<'a>;
+impl<'a> LazyCharIterExt for &'a [u8] {
+    type Iter = LazyCharSliceIter<'a>;
 
     fn chars(&self) -> Self::Iter {
-        CharSliceIter {
+        LazyCharSliceIter {
             slice_iter: self.iter(),
         }
     }
 }
 
-impl<'a> CharIterExt for &'a Vec<u8> {
-    type Iter = CharSliceIter<'a>;
+impl<'a> LazyCharIterExt for &'a Vec<u8> {
+    type Iter = LazyCharSliceIter<'a>;
 
     fn chars(&self) -> Self::Iter {
-        CharSliceIter {
+        LazyCharSliceIter {
             slice_iter: self.iter(),
         }
     }
@@ -383,7 +383,7 @@ impl Error for Utf8Error {}
 
 #[cfg(test)]
 mod tests {
-    use super::{CharIterExt, Utf8Error};
+    use super::{LazyCharIterExt, Utf8Error};
 
     #[test]
     fn test_good() {
