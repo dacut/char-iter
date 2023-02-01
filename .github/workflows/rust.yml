@@ -1,0 +1,42 @@
+name: Rust
+
+on:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    branches:
+      - main
+env:
+  CARGO_INCREMENTAL: '0'
+  RUSTFLAGS: '-Ccodegen-units=1 -Cinstrument-coverage -Copt-level=0'
+  RUSTDOCFLAGS: '-Ccodegen-units=1 -Cinstrument-coverage -Copt-level=0'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Rust nightly
+      uses: dtolnay/toolchain@nightly
+      with:
+        components: "clippy,rustfmt"
+    - name: Install coverage-run dependencies
+      run: |
+        sudo apt-get install -y llvm
+        pip3 install --user toml
+        cargo install rustfilt
+    - name: Run Clippy check.
+      run: cargo clippy
+    - name: Run formatting check.
+      run: cargo fmt --check
+    - name: Build and test with coverage data
+      run: ./coverage-run.py --no-open --no-html
+    - name: Combine coverage reports
+      run: cat scratchstack-arn.lcov scratchstack-aws-principal.lcov > scratchstack-core.lcov
+    - name: Upload coverage report to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: scratchstack-core.lcov
