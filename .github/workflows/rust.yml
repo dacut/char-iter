@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install Rust nightly
-      uses: dtolnay/toolchain@nightly
+      uses: dtolnay/rust-toolchain@nightly
       with:
         components: "clippy,rustfmt"
     - name: Install coverage-run dependencies
